@@ -32,11 +32,7 @@ export function GithubRoaster() {
 
       try {
         const result = await roastGitHubReadme(username);
-        if (typeof result === "string") {
-          setRoast(result);
-        } else {
-          throw new Error("Unexpected response from server action");
-        }
+        setRoast(result);
       } catch (err) {
         console.error("Error in handleSubmit:", err);
         setError(
