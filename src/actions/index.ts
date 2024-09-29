@@ -9,7 +9,8 @@ async function fetchGitHubReadme(username: string): Promise<string> {
     );
     const repos = response.data;
     const readmeRepo = repos.find(
-      (repo) => repo.name.toLowerCase() === `${username.toLowerCase()}`
+      (repo: { name: string }) =>
+        repo.name.toLowerCase() === `${username.toLowerCase()}`
     );
 
     if (readmeRepo) {
