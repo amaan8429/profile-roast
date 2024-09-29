@@ -28,18 +28,18 @@ async function fetchGitHubReadme(username: string): Promise<string> {
 }
 
 async function generateRoast(readme: string): Promise<string> {
-  const prompt = `Roast this GitHub README in a funny and light-hearted way, but don't be too mean:\n\n${readme}`;
+  const prompt = `Roast this GitHub README in a brutal, savage, and impersonal way:\n\n${readme}. Don't write anything nice! Be ruthless!. Keep it impersonal and dark. Don't write too big of a roast, just 3-4 paragrahps.`;
 
   try {
     const response = await axios.post(
-      "https://llamatool.us.gaianet.network/v1/chat/completions",
+      "https://phi.us.gaianet.network/v1/chat/completions",
       {
         model: "llama",
         messages: [
           {
             role: "system",
             content:
-              "You are a witty assistant that generates funny, light-hearted roasts of GitHub READMEs. Keep it playful and avoid being overly mean.",
+              "You are a ruthless, merciless critic that generates savage, dark, and impersonal roasts of GitHub READMEs. Your goal is to make the reader feel like they are being torn apart by a stranger.",
           },
           {
             role: "user",
@@ -55,30 +55,51 @@ async function generateRoast(readme: string): Promise<string> {
   }
 }
 
+async function cleanUpRoast(roast: string): Promise<string> {
+  const prompt = `Clean up this roast to remove any markdown, HTML, or links, and format it as plain text:\n\n${roast}`;
+
+  try {
+    const response = await axios.post(
+      "https://phi.us.gaianet.network/v1/chat/completions",
+      {
+        model: "llama",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an assistant that cleans up text by removing markdown, HTML, and links, and formats it as plain text.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+      }
+    );
+    return response.data.choices[0].message.content;
+  } catch (error) {
+    console.error("Error cleaning up roast:", error);
+    return "Error cleaning up roast.";
+  }
+}
+
 export async function roastGitHubReadme(username: string): Promise<string> {
   const readme = await fetchGitHubReadme(username);
   if (readme === "Error fetching GitHub README.") {
     return "Couldn't fetch the README. Is the username correct?";
   }
 
-  let roast = await generateRoast(readme);
-  let attempts = 0;
-  const maxAttempts = 3;
+  const roast = await generateRoast(readme);
 
-  while (attempts < maxAttempts) {
-    if (
-      roast &&
-      !roast.includes("<tool_call>") &&
-      !roast.includes("I'm sorry")
-    ) {
-      console.log(roast);
-      return roast;
-    }
-    console.log(`Attempt ${attempts + 1} failed. Retrying...`);
-    roast = await generateRoast(readme);
-    attempts++;
+  if (roast === "Error generating roast.") {
+    return "Sorry, I couldn't come up with a good roast this time. Maybe your README is too awesome to roast!";
   }
 
-  console.log("Max attempts reached. Unable to generate a valid roast.");
-  return "Sorry, I couldn't come up with a good roast this time. Maybe your README is too awesome to roast!";
+  const cleanedRoast = await cleanUpRoast(roast);
+
+  if (cleanedRoast === "Error cleaning up roast.") {
+    return "Sorry, I couldn't clean up the roast. Maybe your README is too awesome to roast!";
+  }
+
+  return cleanedRoast;
 }

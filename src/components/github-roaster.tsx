@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,45 +13,59 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { GithubIcon, CopyIcon } from "lucide-react";
-import { roastGitHubReadme } from "@/actions";
+import ReactMarkdown from "react-markdown";
+import { roastGitHubReadme } from "@/actions"; // Adjust this import based on your actual file structure
 
-export default function GitHubRoaster() {
+export function GithubRoaster() {
   const { toast } = useToast();
   const [username, setUsername] = useState("");
   const [roast, setRoast] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setRoast("");
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setLoading(true);
+      setError("");
+      setRoast("");
 
-    try {
-      const result = await roastGitHubReadme(username);
-      if (
-        result.startsWith("Couldn't fetch") ||
-        result.startsWith("Sorry, I couldn't")
-      ) {
-        setError(result);
-      } else {
-        setRoast(result);
+      try {
+        const result = await roastGitHubReadme(username);
+        if (typeof result === "string") {
+          setRoast(result);
+        } else {
+          throw new Error("Unexpected response from server action");
+        }
+      } catch (err) {
+        console.error("Error in handleSubmit:", err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "An unexpected error occurred. Please try again."
+        );
+        toast({
+          title: "Error",
+          description:
+            err instanceof Error
+              ? err.message
+              : "An unexpected error occurred.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError("Failed to fetch roast. Please try again." + err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [username, toast]
+  );
 
-  const copyToClipboard = () => {
+  const copyToClipboard = useCallback(() => {
     navigator.clipboard.writeText(roast);
     toast({
       title: "Copied to clipboard",
       description: "The roast has been copied to your clipboard.",
     });
-  };
+  }, [roast, toast]);
 
   return (
     <div className="container mx-auto p-4 max-w-2xl">
@@ -101,7 +115,9 @@ export default function GitHubRoaster() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-700">{roast}</p>
+                  <div className="prose max-w-none">
+                    <ReactMarkdown>{roast}</ReactMarkdown>
+                  </div>
                   <Button
                     variant="outline"
                     size="sm"
