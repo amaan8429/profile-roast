@@ -15,8 +15,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "GitHub README Roaster",
-  description: "Roast a GitHub user's README",
+  title: "Profile Roaster",
+  description: "Roast a user's Github Profile",
 };
 
 export default function RootLayout({

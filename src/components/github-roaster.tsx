@@ -73,10 +73,10 @@ export function GithubRoaster() {
         <CardHeader className="bg-[#2b3137] text-white">
           <div className="flex items-center space-x-2">
             <GithubIcon className="w-8 h-8" />
-            <CardTitle className="text-2xl">GitHub README Roaster</CardTitle>
+            <CardTitle className="text-2xl">GitHub Profile Roaster</CardTitle>
           </div>
           <CardDescription className="text-gray-300">
-            Enter a GitHub username to roast their README
+            Enter a GitHub username to roast their profile
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
